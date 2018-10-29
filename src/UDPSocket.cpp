@@ -110,14 +110,65 @@ UDPSocket::~UDPSocket(){
 	
 }
 
-// int readSocketWithNoBlock (char * buffer, int maxBytes );
-// int readSocketWithTimeout (char * buffer, int maxBytes, int timeoutSec, int timeoutMilli);
-// int readSocketWithBlock (char * buffer, int maxBytes );
-// int getMyPort ();
-// int getPeerPort ();
-// int getSocketHandler();
-// int writeToSocketAndWait (char * buffer, int maxBytes,int microSec );
-// int readFromSocketWithNoBlock (char * buffer, int maxBytes );
-// int readFromSocketWithTimeout (char * buffer, int maxBytes, int timeoutSec,\
-// 	int timeoutMilli);
+int UDPSocket::getMyPort (){
+	return this->myPort;
+}
+int UDPSocket::getPeerPort (){
+	return this->peerPort;
+}
+int UDPSocket::getSocketHandler(){
+	return this->sock;
+}
+
+int UDPSocket::readSocketWithNoBlock (char * buffer, int maxBytes ){
+	
+	struct timeval read_timeout;
+	read_timeout.tv_sec = 0;
+	read_timeout.tv_usec = 10;
+
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+
+	struct sockaddr_in aSocketAddress;
+	int aLength, n;
+
+	aLength = sizeof(struct sockaddr_in);
+	aSocketAddress.sin_family = AF_INET; /* note that this is needed */
+	if((n = recvfrom(sock, buffer,  maxBytes, 0, (struct sockaddr*)&aSocketAddress, (socklen_t*)&aLength))<0){
+		perror("Receive 1") ;
+		close(sock);
+	}
+
+	peerAddr = aSocketAddress;
+
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, 0, sizeof read_timeout);
+
+	return n;
+}
+
+int UDPSocket::readSocketWithTimeout (char * buffer, int maxBytes, int timeoutSec, \
+	int timeoutMilli){
+
+	struct timeval read_timeout;
+	read_timeout.tv_sec = timeoutSec;
+	read_timeout.tv_usec = timeoutMilli;
+
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+
+	struct sockaddr_in aSocketAddress;
+	int aLength, n;
+
+	aLength = sizeof(struct sockaddr_in);
+	aSocketAddress.sin_family = AF_INET; /* note that this is needed */
+	if((n = recvfrom(sock, buffer,  maxBytes, 0, (struct sockaddr*)&aSocketAddress, (socklen_t*)&aLength))<0){
+		perror("Receive 1") ;
+		close(sock);
+	}
+
+	peerAddr = aSocketAddress;
+
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, 0, sizeof read_timeout);
+
+	return n;
+}
+
 

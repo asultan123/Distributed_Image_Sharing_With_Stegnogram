@@ -7,5 +7,9 @@ int main(int argc, char const *argv[])
 	server.initializeServer("10.7.57.252", 50000);
 	server.readFromSocketWithBlock (test, 500 );
 	printf("%s\n",test);
+	server.readSocketWithTimeout(test, 500, 5, 500);
+	printf("%s\n",test);
+	server.readSocketWithNoBlock(test,500);
+	printf("%s\n",test);
 	return 0;
 }

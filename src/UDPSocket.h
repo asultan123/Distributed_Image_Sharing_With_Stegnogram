@@ -44,7 +44,6 @@ public:
 	int readSocketWithNoBlock (char * buffer, int maxBytes );
 	int readSocketWithTimeout (char * buffer, int maxBytes, int timeoutSec, int
 		timeoutMilli);
-	int readSocketWithBlock (char * buffer, int maxBytes );
 	int getMyPort ();
 	int getPeerPort ();
 	void enable();
