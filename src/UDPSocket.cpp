@@ -86,21 +86,16 @@ int UDPSocket::writeToSocket (char * buffer, int maxBytes ){
 	return n;
 }
 
-// int writeToSocketAndWait (char * buffer, int maxBytes,int microSec );
-// int readFromSocketWithNoBlock (char * buffer, int maxBytes );
-// int readFromSocketWithTimeout (char * buffer, int maxBytes, int timeoutSec,\
-// 	int timeoutMilli);
-
 int UDPSocket::readFromSocketWithBlock (char * buffer, int maxBytes )	{
 	struct sockaddr_in aSocketAddress;
 	int aLength, n;
 
-
-	aLength = sizeof(aSocketAddress);
+	aLength = sizeof(struct sockaddr_in);
 	aSocketAddress.sin_family = AF_INET; /* note that this is needed */
-	if((n = recvfrom(sock, buffer,  maxBytes, 0, (struct sockaddr*)&aSocketAddress, (socklen_t*)&aLength))<0)
+	if((n = recvfrom(sock, buffer,  maxBytes, 0, (struct sockaddr*)&aSocketAddress, (socklen_t*)&aLength))<0){
 		perror("Receive 1") ;
-	close(sock);
+		close(sock);
+	}
 
 	peerAddr = aSocketAddress;
 
@@ -112,7 +107,6 @@ UDPSocket::UDPSocket(){
 }
 
 UDPSocket::~UDPSocket(){
-
 	
 }
 
@@ -122,5 +116,8 @@ UDPSocket::~UDPSocket(){
 // int getMyPort ();
 // int getPeerPort ();
 // int getSocketHandler();
-
+// int writeToSocketAndWait (char * buffer, int maxBytes,int microSec );
+// int readFromSocketWithNoBlock (char * buffer, int maxBytes );
+// int readFromSocketWithTimeout (char * buffer, int maxBytes, int timeoutSec,\
+// 	int timeoutMilli);
 
