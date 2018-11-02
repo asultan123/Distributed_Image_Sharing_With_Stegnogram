@@ -1,5 +1,5 @@
 #ifndef UDPSOCKET_H
-#define UDPSOCKET_H 
+#define UDPSOCKET_H
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <mutex>
+
+using namespace std;
 
 class UDPSocket
 {
@@ -23,16 +26,17 @@ protected:
 	int myPort;
 	int peerPort;
 	bool enabled;
-	pthread_mutex_t mutex;
+    std::mutex mtx;
+
 public:
 	UDPSocket ();
 
 	void makeLocalSA(struct sockaddr_in *sa);
 	void makeDestSA(struct sockaddr_in* sa, char* hostip, int port);
 	void makeReceiverSA(struct sockaddr_in *sa, int port);
-	
+
 	void setFilterAddress (char * _filterAddress);
-	char * getFilterAddress ();
+	char* getFilterAddress ();
 	bool initializeServer (char * _myAddr, int _myPort);
 	bool initializeClient (char * _peerAddr, int _peerPort);
 	int writeToSocket (char * buffer, int maxBytes );

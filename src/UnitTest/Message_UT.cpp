@@ -2,63 +2,90 @@
 #include<cstdio>
 #include<iostream>
 #include<string>
-#include "Message.cpp"
+#include<algorithm>
+#include<stdlib.h>
+#include "../Message.h"
+#include "Communcation.h"
 
 using namespace std;
 
 int main() {
 
-	Message msg(1, "192.168.1.1", 8888,"Type","Data" ,2,3),msg2;
+    Communcation coms;
 
-	cout << "id=" << msg.getMessageId()<<endl;
-	cout << "ip=" << msg.getIp() << endl;
-	cout << "port=" << msg.getPort() << endl;
-	cout << "type=" << msg.getType() << endl;
-	cout << "type=" << msg.getData() << endl;
-	cout << "order=" << msg.getSegmentOrder() << endl;
-	cout << "count=" << msg.getSegmentCount() << endl;
-
-	cout << "marshalled=" << msg.marshal() << endl;
-
+	Message msg(1, "192.168.1.1", 8888,"Type","Data" ,2,3);
+	Message &msg2 = *(new Message);
 
 	msg2.unmarshal(msg.marshal());
 
-	cout << "id=" << msg2.getMessageId() << endl;
-	cout << "ip=" << msg2.getIp() << endl;
-	cout << "port=" << msg2.getPort() << endl;
-	cout << "type=" << msg2.getType() << endl;
-	cout << "type=" << msg2.getData() << endl;
-	cout << "order=" << msg2.getSegmentOrder() << endl;
-	cout << "count=" << msg2.getSegmentCount() << endl;
+    Message msg3 = msg2;
 
-	vector<Message> msgs;
-	msgs = createMessages(3, "192.168.1.2", 7777, "Type2", "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+    cout<<"Testing Marshalling and unMarshalling"<<endl;
 
+    if(msg != msg2){
+        cout<<"marshall/unmarshall failed"<<endl;
+        throw;
+    }else{
+        cout<<"pass!"<<endl;
+    }
 
-	for (int i = 0; i < msgs.size(); i++) {
-		cout << "id=" << msgs[i].getMessageId() << endl;
-		cout << "ip=" << msgs[i].getIp() << endl;
-		cout << "port=" << msgs[i].getPort() << endl;
-		cout << "type=" << msgs[i].getType() << endl;
-		cout << "type=" << msgs[i].getData() << endl;
-		cout << "order=" << msgs[i].getSegmentOrder() << endl;
-		cout << "count=" << msgs[i].getSegmentCount() << endl;
-	}
+    cout<<"Testing copy constructor"<<endl;
 
+    if(msg3 != msg2){
+        cout<<"copy constructor failed"<<endl;
+        throw;
+    }else{
+        cout<<"pass!"<<endl;
+    }
 
-	Message msg3;
+    cout<<"Testing message partitioning and assimilation"<<endl;
 
-	msg3 = assembleBigMessage(msgs);
+    string testData = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
 
-	cout << "id=" << msg3.getMessageId() << endl;
-	cout << "ip=" << msg3.getIp() << endl;
-	cout << "port=" << msg3.getPort() << endl;
-	cout << "type=" << msg3.getType() << endl;
-	cout << "type=" << msg3.getData() << endl;
-	cout << "order=" << msg3.getSegmentOrder() << endl;
-	cout << "count=" << msg3.getSegmentCount() << endl;
+	vector<Message> &msgs = *(new std::vector<Message>);
+	msgs = Message::createMessages(3, "192.168.1.2", 7777, "Type2", testData,30);
 
-	system("pause");
+	Message bigMessage = Message::assembleBigMessage(msgs);
+
+    if(testData.length() != bigMessage.getData().length()){
+        cout<<"Mini-message creation and assimilation failed!"<<endl;
+        throw "";
+    }else{
+        cout<<"pass!"<<endl;
+    }
+
+    cout<<"testing message set insertion and deletion"<<endl;
+
+    testData = "";
+
+    for(int i = 0; i<200; i++){
+        testData += 'a' + rand()%20;
+    }
+
+    msgs = Message::createMessages(3, "192.168.1.2", 7777, "Type2", testData,30);
+
+    random_shuffle(msgs.begin(),msgs.end());
+
+    set<Message, Message::MessageCompare> messageSet;
+
+    for(auto it : msgs){
+        messageSet.insert(it);
+        if(rand()%2>0){
+            cout<<"Randomly inserted duplicate!"<<endl;
+            messageSet.insert(it);
+        }
+    }
+
+    msgs.clear();
+
+    bigMessage = Message::assembleBigMessage(messageSet);
+
+    if(testData == bigMessage.getData()){
+        cout<<"Mini-message creation and assimilation failed!"<<endl;
+        throw "";
+    }else{
+        cout<<"pass!"<<endl;
+    }
 
 
 	return 0;

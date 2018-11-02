@@ -1,0 +1,73 @@
+# depslib dependency file v1.0
+1540825917 source:/home/asultan/Desktop/Project/src/base64.cpp
+	"base64.h"
+	<iostream>
+
+1540825917 /home/asultan/Desktop/Project/src/base64.h
+	<string>
+
+1540844417 source:/home/asultan/Desktop/Project/src/Data.cpp
+	"Data.h"
+
+1540919774 /home/asultan/Desktop/Project/src/Data.h
+	<string>
+
+1540917056 source:/home/asultan/Desktop/Project/src/ImageToString.cpp
+
+1541126364 source:/home/asultan/Desktop/Project/src/Message.cpp
+	"Message.h"
+	<cstdlib>
+	<cmath>
+	<cstdio>
+	<string>
+	"Message.h"
+
+1541127357 /home/asultan/Desktop/Project/src/Message.h
+	<vector>
+	<string>
+	"base64.h"
+	<iostream>
+	<set>
+
+1541088946 source:/home/asultan/Desktop/Project/src/UDPSocket.cpp
+	"UDPSocket.h"
+	<sys/types.h>
+	<sys/socket.h>
+	<netdb.h>
+	<netinet/in.h>
+	<iostream>
+	<cstdio>
+	<cstring>
+	<stdlib.h>
+	<unistd.h>
+	<arpa/inet.h>
+
+1541088951 /home/asultan/Desktop/Project/src/UDPSocket.h
+	<sys/types.h>
+	<sys/socket.h>
+	<netdb.h>
+	<netinet/in.h>
+	<iostream>
+	<cstdio>
+	<cstring>
+	<stdlib.h>
+	<unistd.h>
+	<arpa/inet.h>
+	<mutex>
+
+1541126933 source:/home/asultan/Desktop/Project/src/UnitTest/Message_UT.cpp
+	<cstdlib>
+	<cstdio>
+	<iostream>
+	<string>
+	<algorithm>
+	<stdlib.h>
+	"../Message.h"
+	"Communcation.h"
+
+1541127112 source:/home/asultan/Desktop/Project/src/Communcation.cpp
+	"Communcation.h"
+
+1540923359 source:/home/asultan/Desktop/Project/src/UnitTest/server.cpp
+	"UDPSocket.h"
+
