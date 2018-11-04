@@ -21,15 +21,11 @@ protected:
 	int sock;
 	sockaddr_in myAddr;
 	sockaddr_in peerAddr;
-	char * myAddress;
-	char * peerAddress;
-	int myPort;
-	int peerPort;
-	bool enabled;
-    std::mutex mtx;
+    mutex mtx;
 
 public:
 	UDPSocket ();
+	UDPSocket (const UDPSocket& rhs);
 
 	void makeLocalSA(struct sockaddr_in *sa);
 	void makeDestSA(struct sockaddr_in* sa, char* hostip, int port);
@@ -37,7 +33,7 @@ public:
 
 	void setFilterAddress (char * _filterAddress);
 	char* getFilterAddress ();
-	bool initializeServer (char * _myAddr, int _myPort);
+	bool initializeServer (int _myPort);
 	bool initializeClient (char * _peerAddr, int _peerPort);
 	int writeToSocket (char * buffer, int maxBytes );
 	int writeToSocketAndWait (char * buffer, int maxBytes,int microSec );

@@ -34,7 +34,7 @@ void UDPSocket::makeReceiverSA(struct sockaddr_in *sa, int port)
 	sa-> sin_addr.s_addr = htonl(INADDR_ANY);
 }
 
-bool UDPSocket::initializeServer (char * _myAddr, int _myPort)
+bool UDPSocket::initializeServer (int _myPort)
 {
     mtx.lock();
 
@@ -49,9 +49,6 @@ bool UDPSocket::initializeServer (char * _myAddr, int _myPort)
 		close(sock);
 		return false;
 	}
-
-	this->myAddress = _myAddr;
-	this->myPort = _myPort;
 
 	mtx.unlock();
 
@@ -78,12 +75,31 @@ bool UDPSocket::initializeClient(char* _peerAddr, int _peerPort)
 
 	makeDestSA(&peerAddr, _peerAddr, _peerPort);
 
-	this->peerAddress = _peerAddr;
-	this->peerPort = _peerPort;
-
     mtx.unlock();
 
 	return true;
+}
+
+UDPSocket::UDPSocket(const UDPSocket& rhs){
+//SHALLOW COPY IS ALLOWED HERE FOR SOCKET ADDRESS
+//
+//sockaddr contains just primitives
+//
+//struct sockaddr_in {
+//    short            sin_family;   // e.g. AF_INET
+//    unsigned short   sin_port;     // e.g. htons(3490)
+//    struct in_addr   sin_addr;     // see struct in_addr, below
+//    char             sin_zero[8];  // zero this if you want to
+//};
+//
+//struct in_addr {
+//    unsigned long s_addr;  // load with inet_aton()
+//};
+
+    sock = rhs.sock;
+	myAddr = rhs.myAddr;
+	peerAddr = rhs.peerAddr;
+
 }
 
 int UDPSocket::writeToSocket (char * buffer, int maxBytes ){
@@ -127,13 +143,6 @@ UDPSocket::UDPSocket(){
 
 UDPSocket::~UDPSocket(){
 
-}
-
-int UDPSocket::getMyPort (){
-	return this->myPort;
-}
-int UDPSocket::getPeerPort (){
-	return this->peerPort;
 }
 int UDPSocket::getSocketHandler(){
 	return this->sock;

@@ -43,7 +43,11 @@
 		<Unit filename="../src/Message.h" />
 		<Unit filename="../src/UDPSocket.cpp" />
 		<Unit filename="../src/UDPSocket.h" />
-		<Unit filename="../src/UnitTest/Message_UT.cpp" />
+		<Unit filename="../src/UnitTest/Communications_UT.cpp" />
+		<Unit filename="../src/UnitTest/Message_UT.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../src/UnitTest/client.cpp">
 			<Option compile="0" />
 			<Option link="0" />

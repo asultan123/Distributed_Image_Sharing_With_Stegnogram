@@ -6,6 +6,7 @@
 #include "base64.h"
 #include <iostream>
 #include <set>
+#include <time.h>
 
 //#include<cstdlib>
 //#include<cstdio>
@@ -17,7 +18,7 @@ using namespace std;
 
 class Message
 {
-	protected:
+protected:
 	int id;
 	string ip;
 	int port;
@@ -33,6 +34,10 @@ public:
     Message(const Message& rhs);
 
 	~Message();
+
+	static string randomLowerCaseString(int length);
+
+	static vector<Message> randomMessagesWith(int _id, int _port, string _ip, string _type, int msgCount);
 
     bool operator==(const Message& lhs);
 
@@ -60,7 +65,7 @@ public:
 
 	string getMessageUID();
 
-	static string to_string(int input);
+//	static string to_string(int input);
 
     struct MessageCompare{
         bool operator()(const Message& lhs, const Message& rhs);

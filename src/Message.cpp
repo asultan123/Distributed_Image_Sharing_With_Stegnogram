@@ -29,6 +29,27 @@ Message::~Message()
 {
 }
 
+string Message::randomLowerCaseString(int length){
+    string temp = "";
+    for(int i = 0; i<length; i++){
+        temp+= char(rand()%26 + 'a');
+    }
+    return temp;
+}
+
+vector<Message> Message::randomMessagesWith(int _id, int _port, string _ip,string _type, int msgCount){
+    const int randStringLength = 10;
+    vector<Message> temp;
+
+    for(int i = 0; i<msgCount; i++){
+        Message tmpMessage(_id, _ip, _port, _type\
+        , randomLowerCaseString(randStringLength),i, msgCount);
+        temp.push_back(tmpMessage);
+    }
+
+    return temp;
+}
+
 bool Message::MessageCompare::operator()(const Message& lhs, const Message& rhs){
     return lhs.getSegmentOrder() < rhs.getSegmentOrder();
 }
@@ -77,16 +98,16 @@ bool Message::operator!=(const Message& lhs){
     return !(*this==lhs);
 }
 
-string Message::to_string(int input){
-	string temp = "";
-
-	while(input>0){
-		temp = (char)((int)'0' + input%10) + temp;
-		input = input / 10;
-	}
-
-	return temp;
-}
+//string Message::to_string(int input){
+//	string temp = "";
+//
+//	while(input>0){
+//		temp = (char)((int)'0' + input%10) + temp;
+//		input = input / 10;
+//	}
+//
+//	return temp;
+//}
 
 Message::Message(const Message& rhs){
     this->id = rhs.id;
@@ -108,7 +129,7 @@ return base64_encode((unsigned char*)temp.c_str(), temp.length());
 }
 
 string Message::getMessageUID(){
-    return to_string(getMessageId())+ getIp() + to_string(getPort());
+    return to_string(getMessageId())+ getIp() + to_string(getPort()) + type;
 }
 
 void Message::unmarshal(string input)
@@ -166,10 +187,7 @@ Message Message::assembleBigMessage(std::vector<Message> minis)
 
 Message Message::assembleBigMessage(std::set<Message,MessageCompare> minis)
 {
-    vector<Message> temp;
-    for(auto& it : minis){
-        temp.insert(temp.begin(),it);
-    }
+    vector<Message> temp(minis.begin(),minis.end());
     return assembleBigMessage(temp);
 }
 
@@ -188,7 +206,7 @@ string _type, string _data, int maxPacketSize)
         }
     }
 	catch(...){
-        cout<<"default max packet size to 8kb"<<endl;
+        cout<<"default max packet size set to 8kb"<<endl;
         maxPacketSize = 8000;
 	}
 
