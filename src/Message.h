@@ -7,6 +7,7 @@
 #include <iostream>
 #include <set>
 #include <time.h>
+#include <sstream>
 
 //#include<cstdlib>
 //#include<cstdio>
@@ -37,7 +38,7 @@ public:
 
 	static string randomLowerCaseString(int length);
 
-	static vector<Message> randomMessagesWith(int _id, int _port, string _ip, string _type, int msgCount);
+    static vector<Message> randomMessageBrokenDownToMiniMessages(int _id, int _port,string _ip,string _type,int dataLength, int maxPacketSize, int maxSegmentCount);
 
     bool operator==(const Message& lhs);
 
@@ -45,7 +46,7 @@ public:
 
 	int getMessageId() const;
 
-	void printMessage();
+	string printMessage();
 
 	string getType() const;
 
@@ -59,11 +60,15 @@ public:
 
 	int getSegmentCount() const;
 
-	string marshal();
+	string marshal(int maxSegmentCount, int maxPacketSize);
+
+	string padNumberWithLeadingZeros(int number, int numberWidth);
 
 	void unmarshal(string input);
 
 	string getMessageUID();
+
+	int messageSize(int maxSegmentCount, int maxPacketSize);
 
 //	static string to_string(int input);
 
@@ -74,7 +79,7 @@ public:
 	static Message assembleBigMessage(std::vector<Message> minis);
 	static Message assembleBigMessage(std::set<Message,MessageCompare> minis);
 
-	static std::vector<Message> createMessages(int _id, string _ip, int _port,string _type, string _data, int max_packet_size);
+	static std::vector<Message> createMessages(int _id, string _ip, int _port,string _type, string _data, int max_packet_size, int maxNumberOfPackets);
 
 };
 #endif

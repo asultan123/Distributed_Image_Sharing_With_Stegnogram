@@ -19,7 +19,7 @@ class Communcation
 {
     public:
         Communcation(int maxNumberOfListeners, int numberOfSenders, \
-                    int maxPacketSize, int listenerPort, int maxRetriesPerPacket);
+                    int maxPacketSize, int _maxSegmentCount, int listenerPort, int maxRetriesPerPacket);
         ~Communcation();
 
         struct Request{
@@ -70,6 +70,7 @@ class Communcation
         int listenerPort;
         int globalId;
         int maxRetriesPerPacket;
+        int maxSegmentCount;
 
         vector<thread> listener;
         vector<thread> sender;

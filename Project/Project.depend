@@ -14,7 +14,7 @@
 
 1540917056 source:/home/asultan/Desktop/Project/src/ImageToString.cpp
 
-1541186088 source:/home/asultan/Desktop/Project/src/Message.cpp
+1541609490 source:/home/asultan/Desktop/Project/src/Message.cpp
 	"Message.h"
 	<cstdlib>
 	<cmath>
@@ -22,13 +22,14 @@
 	<string>
 	"Message.h"
 
-1541199517 /home/asultan/Desktop/Project/src/Message.h
+1541607986 /home/asultan/Desktop/Project/src/Message.h
 	<vector>
 	<string>
 	"base64.h"
 	<iostream>
 	<set>
 	<time.h>
+	<sstream>
 
 1541279410 source:/home/asultan/Desktop/Project/src/UDPSocket.cpp
 	"UDPSocket.h"
@@ -56,7 +57,7 @@
 	<arpa/inet.h>
 	<mutex>
 
-1541126933 source:/home/asultan/Desktop/Project/src/UnitTest/Message_UT.cpp
+1541608843 source:/home/asultan/Desktop/Project/src/UnitTest/Message_UT.cpp
 	<cstdlib>
 	<cstdio>
 	<iostream>
@@ -66,13 +67,13 @@
 	"../Message.h"
 	"Communcation.h"
 
-1541289133 source:/home/asultan/Desktop/Project/src/Communcation.cpp
+1541617120 source:/home/asultan/Desktop/Project/src/Communcation.cpp
 	"Communcation.h"
 
 1540923359 source:/home/asultan/Desktop/Project/src/UnitTest/server.cpp
 	"UDPSocket.h"
 
-1541287874 source:/home/asultan/Desktop/Project/src/UnitTest/Communications_UT.cpp
+1541616783 source:/home/asultan/Desktop/Project/src/UnitTest/Communications_UT.cpp
 	<iostream>
 	<Communcation.h>
 	<vector>

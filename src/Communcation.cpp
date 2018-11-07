@@ -1,6 +1,6 @@
 #include "Communcation.h"
 
-Communcation::Communcation(int _numberOfListeners, int _numberOfSenders,int _maxPacketLength, \
+Communcation::Communcation(int _numberOfListeners, int _numberOfSenders,int _maxPacketLength,int _maxSegmentCount, \
                             int _listenerPort, int _maxRetriesPerPacket)
 {
     maxPacketLength = _maxPacketLength;
@@ -8,6 +8,7 @@ Communcation::Communcation(int _numberOfListeners, int _numberOfSenders,int _max
     numOfSenders = _numberOfSenders;
     listenerPort = _listenerPort;
     globalId = 0;
+    maxSegmentCount = _maxSegmentCount;
     //ctor
 }
 
@@ -171,6 +172,7 @@ bool Communcation::popResponse(Request& responseToFind){
             success = false;
         }
         else{
+            responseToFind.response = reqIt->response;
             responseVector.erase(reqIt);
             success = true;
         }
@@ -185,8 +187,7 @@ bool Communcation::checkForAck(Message msg, int waitTime){
     return true;
 }
 
-bool Communcation::sendMiniMessages(vector<Message> miniMessages, UserInfo userInfo, \
-                                    Request newReq, int threadNumber)
+bool Communcation::sendMiniMessages(vector<Message> miniMessages, UserInfo userInfo, Request newReq, int threadNumber)
 {
     client[threadNumber].initializeClient((char*)userInfo.ip.c_str(),userInfo.port);
 
@@ -195,7 +196,7 @@ bool Communcation::sendMiniMessages(vector<Message> miniMessages, UserInfo userI
     for(auto msg : miniMessages){
         int trials = 0;
         do{
-            client[threadNumber].writeToSocket((char*)msg.marshal().c_str(),maxPacketLength);
+            client[threadNumber].writeToSocket((char*)msg.marshal(to_string(maxSegmentCount).size(), maxPacketLength).c_str(),maxPacketLength);
             trials++;
         }while(!checkForAck(msg, 0) && trials < maxRetriesPerPacket);
 
@@ -218,7 +219,7 @@ void Communcation::send(int threadNumber){
             if(!resolveUserInfo(userInfo,newReq)){
                 cout<<"Invalid username info recieved by thread "<<threadNumber<<" requested username: "\
                     <<newReq.username<<endl;
-                newReq.response="Request Send Failed, User not found";
+                newReq.response="Message Send Failed, User not found";
                 newReq.status = false;
                 pushResponse(newReq);
                 continue;
@@ -226,7 +227,7 @@ void Communcation::send(int threadNumber){
 
             if(!userInfo.online){
                 cout<<"User "<<newReq.username<<" not online"<<endl;
-                newReq.response = "Request Send Failed, User not online";
+                newReq.response = "Message Send Failed, User not online";
                 newReq.status = false;
                 pushResponse(newReq);
                 continue;
@@ -235,15 +236,15 @@ void Communcation::send(int threadNumber){
             vector<Message> miniMessages =
                 Message::createMessages(getAndIncrementGlobalId(),userInfo.ip,\
                                         userInfo.port,newReq.type,\
-                                        newReq.data,maxPacketLength);
+                                        newReq.data,maxPacketLength, maxSegmentCount);
 
             bool messageDelivered = sendMiniMessages(miniMessages, userInfo,  newReq, threadNumber);
 
             if(!messageDelivered){
-                newReq.response = "Request send failed, Network error";
+                newReq.response = "Message send failed, Network error";
                 newReq.status = false;
             }else{
-                newReq.response = "Request delivered";
+                newReq.response = "Message delivered";
                 newReq.status = true;
             }
             pushResponse(newReq);
@@ -258,6 +259,8 @@ bool Communcation::updateUserInfoFromDirectory(){
     temp.online = true;
     temp.port = 5000;
     usernameCache["SELF"] = temp;
+    temp.online = false;
+    usernameCache["OFFLINE"] = temp;
     return true;
 }
 
@@ -281,9 +284,11 @@ void Communcation::listen(int threadNumber){
 
         char* message = (char*) malloc(maxPacketLength*sizeof(char));
         server.readFromSocketWithBlock(message, maxPacketLength);
-        //cout<<"Listener number "<<threadNumber<<" recieved a message of size :"<<messageSize<<endl;
+        cout<<"Listener number "<<threadNumber<<" recieved a message "<<endl;
+
         Message newMessage;
         newMessage.unmarshal(string(message));
+        //cout<<"Message: "<<newMessage.printMessage()<<endl;
         pushIntoAssembler(newMessage);
         Message bigMessage;
 

@@ -8,9 +8,8 @@
 #define SEPARATOR "!!"
 using namespace std;
 
-Message::Message(int _id, string _ip, int _port, string _type, string _data,\
- int _segmentOrder, int _segmentCount){
-	 id = _id;
+Message::Message(int _id, string _ip, int _port, string _type, string _data,int _segmentOrder, int _segmentCount){
+    id = _id;
 	ip=_ip;
 	port = _port;
 	type = _type;
@@ -37,17 +36,9 @@ string Message::randomLowerCaseString(int length){
     return temp;
 }
 
-vector<Message> Message::randomMessagesWith(int _id, int _port, string _ip,string _type, int msgCount){
-    const int randStringLength = 10;
-    vector<Message> temp;
-
-    for(int i = 0; i<msgCount; i++){
-        Message tmpMessage(_id, _ip, _port, _type\
-        , randomLowerCaseString(randStringLength),i, msgCount);
-        temp.push_back(tmpMessage);
-    }
-
-    return temp;
+vector<Message> Message::randomMessageBrokenDownToMiniMessages(int _id, int _port,string _ip,string _type,int dataLength, int maxPacketSize,int maxSegmentCount)
+{
+    return createMessages(_id,_ip,_port,_type,randomLowerCaseString(dataLength),maxPacketSize,maxSegmentCount);
 }
 
 bool Message::MessageCompare::operator()(const Message& lhs, const Message& rhs){
@@ -98,17 +89,6 @@ bool Message::operator!=(const Message& lhs){
     return !(*this==lhs);
 }
 
-//string Message::to_string(int input){
-//	string temp = "";
-//
-//	while(input>0){
-//		temp = (char)((int)'0' + input%10) + temp;
-//		input = input / 10;
-//	}
-//
-//	return temp;
-//}
-
 Message::Message(const Message& rhs){
     this->id = rhs.id;
 	this->ip= rhs.ip;
@@ -119,12 +99,40 @@ Message::Message(const Message& rhs){
 	this->segmentCount = rhs.segmentCount;
 }
 
-string Message::marshal(){
+string Message::padNumberWithLeadingZeros(int number, int numberWidth){
+    string res = to_string(number);
+    int currentNumberWidth = res.size();
+    if(currentNumberWidth>numberWidth){
+        cout<<"Invalid padding request made, number is bigger than desired width"<<endl;
+        throw "";
+    }
+    int numberOfZeroesToAdd = numberWidth - currentNumberWidth;
+    for(int i = 0; i<numberOfZeroesToAdd; i++){
+        res = '0' + res;
+    }
+    return res;
+}
 
-string temp = to_string(id)+SEPARATOR+ip+SEPARATOR+to_string(port)+SEPARATOR+type+SEPARATOR+data+SEPARATOR\
-	+to_string(segmentOrder)+SEPARATOR+to_string(segmentCount)+SEPARATOR;
+string Message::marshal(int maxSegmentCount, int maxPacketSize){
 
-return base64_encode((unsigned char*)temp.c_str(), temp.length());
+    string temp = to_string(id);
+    temp+=SEPARATOR;
+    temp+=ip;
+    temp+=SEPARATOR;
+    temp+=to_string(port);
+    temp+=SEPARATOR;
+    temp+=type;
+    temp+=SEPARATOR;
+    temp+=data;
+    temp+=SEPARATOR;
+    temp+=to_string(segmentOrder);
+    temp+=SEPARATOR;
+    temp+=padNumberWithLeadingZeros(segmentCount, maxSegmentCount);
+    temp+=SEPARATOR;
+
+	//base64_encode((unsigned char*)temp.c_str(), maxPacketSize);
+
+return temp;
 
 }
 
@@ -132,10 +140,14 @@ string Message::getMessageUID(){
     return to_string(getMessageId())+ getIp() + to_string(getPort()) + type;
 }
 
+int Message::messageSize(int maxSegmentCount, int maxPacketSize){
+    return marshal(to_string(maxSegmentCount).size(), maxPacketSize).size();
+}
+
 void Message::unmarshal(string input)
 	{
 
-	input = base64_decode(input);
+	//input = base64_decode(input);
 
 	int pos=0;
 	string temp="";
@@ -159,20 +171,33 @@ void Message::unmarshal(string input)
 			break;
 			case 5:segmentOrder=atoi(temp.c_str());
 			break;
-			case 6:segmentCount=atoi(temp.c_str());
+			case 6:
+                for(int segCountStart = 0; segCountStart<temp.size(); segCountStart++){
+                    if(temp[segCountStart]=='0'){
+                        continue;
+                    }
+                    else{
+                        segmentCount = atoi((char*)temp.substr(segCountStart,4).c_str());
+                        break;
+                    }
+                }
 			break;
 			}
 		}
 	}
 
-void Message::printMessage(){
-	cout << "id=" << getMessageId() << endl;
-	cout << "ip=" << getIp() << endl;
-	cout << "port=" << getPort() << endl;
-	cout << "type=" << getType() << endl;
-	cout << "data=" << getData() << endl;
-	cout << "order=" << getSegmentOrder() << endl;
-	cout << "count=" << getSegmentCount() << endl;
+string Message::printMessage(){
+    stringstream ss;
+
+	ss << "id=" << getMessageId() << endl;
+	ss << "ip=" << getIp() << endl;
+	ss << "port=" << getPort() << endl;
+	ss << "type=" << getType() << endl;
+	ss << "data=" << getData() << endl;
+	ss << "order=" << getSegmentOrder() << endl;
+	ss << "count=" << getSegmentCount() << endl;
+
+	return ss.str();
 }
 
 Message Message::assembleBigMessage(std::vector<Message> minis)
@@ -192,38 +217,34 @@ Message Message::assembleBigMessage(std::set<Message,MessageCompare> minis)
 }
 
 
-std::vector<Message> Message::createMessages(int _id, string _ip, int _port,\
-string _type, string _data, int maxPacketSize)
+std::vector<Message> Message::createMessages(int _id, string _ip, int _port,string _type, string _data, int maxPacketSize, int maxSegmentCount)
 {
-	string temp;
-	int headerSize = to_string(_id).length() + _ip.length() + to_string(_port).length() + _type.length();
+    int headerSize = to_string(_id).size()+_ip.size()+to_string(_port).size()+_type.size();
+    int footerSize = to_string(maxSegmentCount).size() + to_string(maxSegmentCount).size();
+    int seperatorOverhead = 7*string(SEPARATOR).size();
+    int dataSizePerPacket = maxPacketSize - headerSize - footerSize - seperatorOverhead;
+    bool dataAvailable = true;
+    int _segmentCount = 0;
 
-    try{
-    	if(maxPacketSize <= headerSize){
-            cout<<"insufficient packet size defined for message " + to_string(_id) \
-            + _ip + to_string(_port);
-            throw;
+    vector<string> dataSegments;
+
+    while(dataAvailable){
+        string dataSegment = _data.substr(_segmentCount*dataSizePerPacket, dataSizePerPacket);
+        dataSegments.push_back(dataSegment);
+        if(dataSegment.size()<dataSizePerPacket){
+            dataAvailable = false;
         }
+        _segmentCount++;
     }
-	catch(...){
-        cout<<"default max packet size set to 8kb"<<endl;
-        maxPacketSize = 8000;
-	}
 
-	float remainingLength = maxPacketSize - headerSize;
+    vector<Message> msgs;
 
-	int count=ceil(_data.length()/remainingLength);
-
-	vector<Message> msgs;
-	for(int i=0;i<count;i++)
-    {
-
-        temp=_data.substr(i*remainingLength,remainingLength);
-        Message msg(_id,_ip,_port,_type,temp,i,count);
+    for(int _segmentOrder = 0; _segmentOrder<_segmentCount; _segmentOrder++){
+        Message msg(_id, _ip, _port, _type, dataSegments[_segmentOrder], _segmentOrder, _segmentCount);
+        msg.marshal(to_string(maxSegmentCount).size(), maxPacketSize);
         msgs.push_back(msg);
-
-
     }
+
 	return msgs;
 }
 
