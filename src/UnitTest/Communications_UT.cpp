@@ -6,6 +6,7 @@
 #include<assert.h>
 #include<UDPSocket.h>
 #include<chrono>
+#include<thread>
 
 using namespace std;
 
@@ -91,6 +92,16 @@ string randomLowerCaseString(int length){
     return temp;
 }
 
+void sendAsync(Communcation* comm, string username, string type, string data, string response){
+    if(comm->sendMessage(username,type,data,response)){
+        cout<<"Message " <<" sent successfully"<<endl;
+        cout<<response<<endl;
+    }
+    else{
+        cout<<"Message not sent"<<endl;
+    }
+}
+
 void testReqQueue();
 void testResponseVector();
 void testSender(){
@@ -100,60 +111,66 @@ void testSender(){
     //Test Sending 1 message with valid user but offline --> modify resolveUsername fn
     //Test Sending 1 message with random packet less (80% probability of drop) --> modify checkForAck fn
     cout<<"test1, generic send and listen"<<endl;
-    Communcation comm(20, 1,8000,9999, 6000, 5);
+
+    int collectionSize = 5;
+
+    Communcation comm(10, 10,8000,9999, 5000, 5);
 
     comm.startListeners();
     comm.startSenders();
     comm.updateUserInfoFromDirectory();
 
-    string username = "SELF";
-    string data = randomLowerCaseString(25*1000*1000);
+    vector<string> dataSent;
+    vector<thread> workers;
 
-    string type = "7amada";
+    for(int i = 0; i<collectionSize; i++){
 
-    string response = "DEFAULT TEXT";
+        cout<<"Sending message "<<i<<endl;
+        string username = "SELF";
+        string data = randomLowerCaseString(5*1000*1000);
 
-    if(comm.sendMessage(username,type,data,response)){
-        cout<<"Message sent successfully"<<endl;
+        dataSent.push_back(data);
+
+        string type = "7amada";
+
+        string response = "DEFAULT TEXT";
+
+        workers.push_back(thread(sendAsync,&comm,username, type,data,response));
+        workers[i].detach();
     }
-    else{
-        cout<<"Message not sent"<<endl;
+    Message temp;
+    vector<Message> msgs;
+
+    for(int i = 0; i<collectionSize; i++){
+        while(!comm.popBigMessage(temp)){
+            this_thread::sleep_for(chrono::milliseconds(100));
+            cout<<"Nothing yet"<<endl;
+        }
+        msgs.push_back(temp);
     }
 
-    cout<<response<<endl;
+    for(Message msg : msgs){
+        assert(find(dataSent.begin(), dataSent.end(), msg.getData())!=dataSent.end());
+    }
 
-    Message bigMessage;
-
-    while(!comm.popBigMessage(bigMessage));
-
-    cout<<"data = bigMessage.data: "<<endl;
-
-    assert(data == bigMessage.getData());
-
-
-
-
-
-
-
-
-
+    cout<<"All messages sent were recieved correctly"<<endl;
 }
 
 void testListener(){
 
     string ip = "172.16.115.196";
 
-    Communcation comm(20, 1,8000,9999, 5000, 5);
+    Communcation comm(3, 1,8000,9999, 5000, 5);
     comm.startListeners();
 
-    const int collectionSize = 3;
+    const int collectionSize = 6;
 
     vector<Message> randomMessages;
     vector<Message> equivelentBigMessages;
 
     //create randomBrokenDownMessages
     for(int i = 0; i<collectionSize; i++){
+        cout<<"Created message : " << i <<endl;
         vector<Message> temp = \
             Message::randomMessageBrokenDownToMiniMessages(i,5000,ip,"7amada",25*1000*1000,8000,9999);
             equivelentBigMessages.push_back(Message::assembleBigMessage(temp));
@@ -171,15 +188,17 @@ void testListener(){
     for(Message msg : randomMessages){
         string marshaledMessage = msg.marshal(4,8000);
         client.writeToSocket((char*)marshaledMessage.c_str(),8000);
-        this_thread::sleep_for(chrono::milliseconds(1));
         cout<<"Sent Message no: "<<i++<<endl;
     }
 
-    this_thread::sleep_for(chrono::milliseconds(1000));
-
     vector<Message> bigMessages;
     Message temp;
-    while(comm.popBigMessage(temp)){
+
+    for(int i = 0; i<collectionSize; i++){
+        while(!comm.popBigMessage(temp)){
+            this_thread::sleep_for(chrono::milliseconds(100));
+            cout<<"Nothing yet"<<endl;
+        }
         bigMessages.push_back(temp);
     }
 

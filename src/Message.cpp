@@ -38,7 +38,8 @@ string Message::randomLowerCaseString(int length){
 
 vector<Message> Message::randomMessageBrokenDownToMiniMessages(int _id, int _port,string _ip,string _type,int dataLength, int maxPacketSize,int maxSegmentCount)
 {
-    return createMessages(_id,_ip,_port,_type,randomLowerCaseString(dataLength),maxPacketSize,maxSegmentCount);
+    string temp = randomLowerCaseString(dataLength);
+    return createMessages(_id,_ip,_port,_type,temp,maxPacketSize,maxSegmentCount);
 }
 
 bool Message::MessageCompare::operator()(const Message& lhs, const Message& rhs){
@@ -217,7 +218,7 @@ Message Message::assembleBigMessage(std::set<Message,MessageCompare> minis)
 }
 
 
-std::vector<Message> Message::createMessages(int _id, string _ip, int _port,string _type, string _data, int maxPacketSize, int maxSegmentCount)
+std::vector<Message> Message::createMessages(int _id, string _ip, int _port,string _type, string& _data, int maxPacketSize, int maxSegmentCount)
 {
     int headerSize = to_string(_id).size()+_ip.size()+to_string(_port).size()+_type.size();
     int footerSize = to_string(maxSegmentCount).size() + to_string(maxSegmentCount).size();

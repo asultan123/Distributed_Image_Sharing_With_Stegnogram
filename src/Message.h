@@ -79,7 +79,7 @@ public:
 	static Message assembleBigMessage(std::vector<Message> minis);
 	static Message assembleBigMessage(std::set<Message,MessageCompare> minis);
 
-	static std::vector<Message> createMessages(int _id, string _ip, int _port,string _type, string _data, int max_packet_size, int maxNumberOfPackets);
+	static std::vector<Message> createMessages(int _id, string _ip, int _port,string _type, string& _data, int max_packet_size, int maxNumberOfPackets);
 
 };
 #endif

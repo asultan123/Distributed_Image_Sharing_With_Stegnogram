@@ -17,7 +17,7 @@ Communcation::~Communcation()
     //dtor
 }
 
-bool Communcation::sendMessage(string username,string type, string data, string& response){
+bool Communcation::sendMessage(string username,string type, string& data, string& response){
 
     Request req;
     req.username = username;
@@ -173,6 +173,7 @@ bool Communcation::popResponse(Request& responseToFind){
         }
         else{
             responseToFind.response = reqIt->response;
+            responseToFind.status = reqIt->status;
             responseVector.erase(reqIt);
             success = true;
         }
@@ -276,15 +277,17 @@ Message Communcation::assembleBigMessage(Message lastMiniMessage){
 void Communcation::pushBigMessage(Message bigMessage){
     bigMessageQueueLock.lock();
     bigMessageQueue.push(bigMessage);
+    cout<<"Message pushed in queue"<<endl;
     bigMessageQueueLock.unlock();
 }
 
 void Communcation::listen(int threadNumber){
+    char* message = (char*) malloc(maxPacketLength*sizeof(char));
+
     while(true){
 
-        char* message = (char*) malloc(maxPacketLength*sizeof(char));
         server.readFromSocketWithBlock(message, maxPacketLength);
-        cout<<"Listener number "<<threadNumber<<" recieved a message "<<endl;
+        //cout<<"Listener number "<<threadNumber<<" recieved a message "<<endl;
 
         Message newMessage;
         newMessage.unmarshal(string(message));
@@ -294,7 +297,10 @@ void Communcation::listen(int threadNumber){
 
         if(messageComplete(newMessage)){
             bigMessage = assembleBigMessage(newMessage);
+            cout<<"Thread no "<<threadNumber<<" assembled a message"<<endl;
             pushBigMessage(bigMessage);
+            cout<<"Thread no "<<threadNumber<<" pushed big Message"<<endl;
         }
+
     }
 }

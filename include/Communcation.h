@@ -45,7 +45,7 @@ class Communcation
         void pushBigMessage(Message bigMessage);
         bool popBigMessage(Message& bigMessage);
         bool popFromAssembler(Message& bigMessage);
-        bool sendMessage(string username, string type, string data,  string& response);
+        bool sendMessage(string username, string type, string& data,  string& response);
         Message assembleBigMessage(Message lastMiniMessage);
         bool messageComplete(Message input);
         bool updateUserInfoFromDirectory();
