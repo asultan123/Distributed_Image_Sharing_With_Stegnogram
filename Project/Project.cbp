@@ -34,9 +34,11 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="../include/Communcation.h" />
+		<Unit filename="../include/Dispatcher.h" />
 		<Unit filename="../src/Communcation.cpp" />
 		<Unit filename="../src/Data.cpp" />
 		<Unit filename="../src/Data.h" />
+		<Unit filename="../src/Dispatcher.cpp" />
 		<Unit filename="../src/ImageData.h" />
 		<Unit filename="../src/ImageToString.cpp" />
 		<Unit filename="../src/Message.cpp" />

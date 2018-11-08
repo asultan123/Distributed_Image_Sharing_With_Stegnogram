@@ -8,6 +8,7 @@
 #include<chrono>
 #include<thread>
 
+
 using namespace std;
 
 bool messageCompare(const Message& lhs, const Message& rhs){
@@ -127,7 +128,7 @@ void testSender(){
 
         cout<<"Sending message "<<i<<endl;
         string username = "SELF";
-        string data = randomLowerCaseString(5*1000*1000);
+        string data = randomLowerCaseString(1000*1000);
 
         dataSent.push_back(data);
 
