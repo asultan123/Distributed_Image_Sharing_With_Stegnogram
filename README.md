@@ -1,3 +1,3 @@
 # Distributed_Image_Sharing_With_Stegnogram
 
-A multithreaded image sharing application written using QT. 
+A multithreaded image sharing application written using QT, remote method invocation and steganography
